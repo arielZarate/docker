@@ -1,5 +1,7 @@
 # Docker
 
+![docker](public/img/docker_front.jpeg)
+
 Docker es una plataforma de código abierto que permite a los desarrolladores automatizar el despliegue, escalado y administración de aplicaciones dentro de contenedores. Un contenedor es una unidad de software que empaqueta el código de una aplicación junto con todas sus dependencias, librerías y configuraciones necesarias para que pueda ejecutarse de manera consistente en cualquier entorno.
 
 ## Características principales de Docker:
@@ -14,6 +16,9 @@ Docker es una plataforma de código abierto que permite a los desarrolladores au
 
 - Eficiencia en el desarrollo y despliegue: Docker permite a los desarrolladores crear entornos de desarrollo replicables que coinciden con los entornos de producción, lo que reduce los problemas de "funciona en mi máquina" y acelera el ciclo de desarrollo.
 
+![container_mv](public/img//docker_container.png)
+
+<hr/>
 ## Componentes de Docker:
 
 - Docker Engine: Es el motor de Docker, una aplicación cliente-servidor que comprende un demonio de larga ejecución (dockerd), una API REST que especifica interfaces que los programas pueden usar para hablar con el demonio, y una interfaz de línea de comandos (docker).
@@ -71,42 +76,30 @@ sudo apt-get update
 
 ```
 
-2. Instalar paquetes necesarios
+2. Agregar el repositorio de Docker:
 
 ```bash
-sudo apt-get install apt-transport-https ca-certificates curl software-properties-common
-
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+sudo chmod a+r /etc/apt/keyrings/docker.gpg
 ```
 
-3. Agregar la clave GPG de Docker:
-
-```bash
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-```
-
-4. Agregar el repositorio de Docker:
-
-```bash
-sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-
-```
-
-5. Actualizar el índice de paquetes apt de nuevo:
+3. Actualizar el índice de paquetes apt de nuevo:
 
 ```bash
  sudo apt-get update
 ```
 
-6. Instalar Docker
+4. Instalar Docker
 
 ```bash
-sudo apt-get install docker-ce
+sudo  apt install docker.io
+  o descargar el archivo .deb d ela pagina
 ```
 
-7. Verificar la instalacion:
+5. Verificar la instalacion:
 
 ```bash
-sudo systemctl status docker
+ docker --version
 
 ```
 
@@ -146,12 +139,260 @@ docker --version
 
 ```
 
-##############################
+## Cómo gestionar el inicio automático de Docker
+
+En Linux (usando systemd)
+Puedes habilitar o deshabilitar el inicio automático de Docker usando systemctl:
+
+Para habilitar el inicio automático:
 
 ```bash
+sudo systemctl enable docker
+```
+
+Para deshabilitar el inicio automático:
+
+```bash
+sudo systemctl disable docker
+```
+
+## Ejecutar tu primer contenedor
+
+Vamos a ejecutar un contenedor simple utilizando la imagen de hello-world. Esta imagen está diseñada para verificar que Docker esté funcionando correctamente:
+
+```bash
+docker run hello-world
+```
+
+## comandos básicos de Docker
+
+Familiarízate con algunos de los comandos básicos de Docker:
+
+Listar contenedores activos:
+
+```bash
+docker ps
+```
+
+Listar todos los contenedores (activos e inactivos):
+
+```bash
+docker ps -a
+```
+
+Listar imágenes descargadas:
+
+```bash
+docker images
+```
+
+Arrancar un contenedor:
+
+```bash
+docker start <container_id> o su name
+```
+
+Detener un contenedor:
+
+```bash
+docker stop <container_id>
+```
+
+Eliminar un contenedor:
+
+```bash
+docker rm <container_id>
+```
+
+Reiniciar un Contenedor:
+
+```bash
+docker restart mysql-container
 
 ```
 
+Eliminar una imagen:
+
 ```bash
+docker rmi <image_id>
+```
+
+## Dependencias en vsc
+
+Puede descargar una dependencia de vsc llamada `docker` de microsoft
+Con ella se puede arrancar , eliminar , inspeccionar un contenedor.
+Ademas los contenedoresa activos aparecen en la ventana , es una forma grafica sino le gusta la linea de comandos
+![docker_extendion](public/img//docker.png)
+
+## Docker Hub
+
+Para crear un contenedor en Docker, primero necesitas una imagen de Docker. Una imagen es una plantilla que contiene todos los archivos y configuraciones necesarios para ejecutar un contenedor.
+
+Puedes crear un contenedor en Docker utilizando el comando docker run. Aquí tienes los pasos básicos para crear un contenedor:
+
+vamos a descragr una imagen desde docker git hub nuestro ejemplo mysql
+![](public/img/mysql%20-git.png)
+
+ejecutamos en el shell e instalamos la imagen de mysql
+
+```bash
+docker pull mysql
 
 ```
+
+## Creando un servidor de docker para ejecutar mysql con Node
+
+### 1 creamos el contenedor
+
+```bash
+ docker run --name mysql-container -e MYSQL_ROOT_PASSWORD=admin -e MYSQL_DATABASE=test-docker -p 3307:3306 -d mysql
+
+```
+
+Desglose del Comando `docker run`:
+
+- Este es el comando básico para ejecutar un nuevo contenedor.
+  `--name mysql-container` :
+  `--name` es una opción que permite asignar un nombre específico al contenedor como `mysql-container`
+
+- `-e MYSQL_ROOT_PASSWORD=password` :
+  `-e` es una opción para establecer variables de entorno dentro del contenedor.
+  `MYSQL_ROOT_PASSWORD`=12345 establece la contraseña para el usuario root de MySQL a `password`.
+
+- `-e MYSQL_DATABASE=testdb`: MYSQL_DATABASE=testdb es otra variable de entorno que instruye a MySQL
+  para crear una base de datos llamada testdb al iniciar el contenedor.
+
+- Establecendo el puerto con `-p 3307:3306 `
+
+  `-p` es una opción para mapear puertos del contenedor a puertos de tu máquina anfitriona.
+  3307:3306 significa que el puerto 3306 en tu máquina anfitriona (la máquina donde se está ejecutando Docker) se mapeará al puerto `3307` del contenedor. El puerto 3306 es el puerto por defecto en el que MySQL.
+
+- Ejecutar el contenedor en segundo plano `-d`
+  `-d` es una opción para ejecutar el contenedor en modo desapegado (detached). Esto significa que el contenedor se ejecutará en segundo plano y no bloqueará tu terminal.
+
+- mysql:5.7 o solamente `mysql`.
+  Esta es la imagen de Docker que se utilizará para crear el contenedor. En este caso, se está usando la imagen oficial de MySQL en su versión 5.7.
+
+### 2 creamos en servidor de nodejs
+
+Creamos una folder llamada node_server. Y adentro ejecutamos el siguiente comando
+
+```bash
+npm init -y
+```
+
+creamos el package.json , luego instalamos dependencies
+
+- npm i express
+- npm i mysql2
+
+```javascript
+const express = require("express");
+const mysql = require("mysql2");
+const app = express();
+
+const router = express.Router();
+const PORT = 3001;
+app.name = "server Node con docker";
+
+// Configuración de la conexión a MySQL
+const db = mysql.createConnection({
+  host: "localhost", // El nombre del servicio del contenedor de MySQL
+  user: "root",
+  password: "admin",
+  database: "test-docker",
+  port: "3307",
+});
+
+// Conectar a MySQL
+db.connect((err) => {
+  if (err) {
+    console.error("Error connecting to MySQL:", err);
+    return;
+  }
+  console.log("Connected to MySQL");
+});
+
+//iniciando el server
+app.listen(PORT, () => {
+  console.log(`listening in on port ${PORT} `);
+});
+```
+
+Con esto creado estaria listo el sevidor de node con express y conectado con mysql
+
+# Opcion Extra conectarse a mysql desde el contenedor
+
+Una vez levantado el contenedor tambien podemos acceder a el y entrar con mysql para ejecutar comandos mysql desde consola 😀
+
+### Paso 1: Acceder al contenedor
+
+Primero, necesitas acceder al contenedor en ejecución. Puedes hacerlo utilizando el comando docker exec para ejecutar comandos dentro de un contenedor en ejecución.
+
+```bash
+docker exec -it mysql-container bash
+```
+
+En este comando:
+
+- docker exec ejecuta un nuevo comando en un contenedor en ejecución.
+- -it permite la interacción con la terminal (-i para interactivo y -t para asignar una pseudo-TTY).
+- mysql-container es el nombre del contenedor en el que deseas ejecutar el comando.
+- bash es el comando que deseas ejecutar, en este caso, una terminal bash.
+
+### Paso 2: Conectarse a MySQL desde la terminal del contenedor
+
+Una vez dentro del contenedor, puedes conectarte a MySQL usando el cliente MySQL.
+
+```bash
+mysql -u root -p
+```
+
+Le pedira password ud ingrese la que haya creado con el contenedor (en mi caso admin)
+
+### Paso 3: Realizar consultas MySQL
+
+Una vez conectado a MySQL, puedes realizar cualquier consulta SQL como lo harías en una instalación normal de MySQL. Aquí hay algunos ejemplos:
+Ver todas las bases de datos:
+
+```bash
+SHOW DATABASES;
+```
+
+Usar una base de datos específica:
+
+```bash
+USE test-docker;
+```
+
+Ver todas las tablas en la base de datos actual:
+
+```bash
+SHOW TABLES;
+```
+
+Crear una tabla de ejemplo:
+
+```bash
+CREATE TABLE users (
+id INT AUTO_INCREMENT PRIMARY KEY,
+name VARCHAR(255) NOT NULL,
+email VARCHAR(255) NOT NULL
+);
+```
+
+Insertar datos en una tabla:
+
+```bash
+INSERT INTO users (name, email) VALUES ('John Doe', 'john@example.com');
+```
+
+Seleccionar datos de una tabla:
+
+```bash
+SELECT \* FROM users;
+```
+
+Esta es una forma de realizar consultas MySQL directamente dentro del contenedor. Puedes utilizar cualquier comando SQL que necesites una vez que estés conectado a la base de datos.
+
+![image](public/img/dbmysql.png)
