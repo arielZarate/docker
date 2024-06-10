@@ -25,17 +25,15 @@ db.connect((err) => {
 });
 
 // Ruta de prueba
-/*
 
 app.get("/", (req, res) => {
   db.query("SELECT 1 + 1 AS solution", (err, results) => {
     if (err) throw err;
-    //res.send(`La solución es: ${results[0].solution}`);
-    res.json("chupala jhony!!");
+    console.log(results[0]);
+    res.send(`La solución es: ${results[0].solution}`);
   });
 });
 
-*/
 //iniciando el server
 app.listen(PORT, () => {
   console.log(`listening in on port ${PORT} `);

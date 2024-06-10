@@ -19,6 +19,7 @@ Docker es una plataforma de código abierto que permite a los desarrolladores au
 ![container_mv](public/img//docker_container.png)
 
 <hr/>
+
 ## Componentes de Docker:
 
 - Docker Engine: Es el motor de Docker, una aplicación cliente-servidor que comprende un demonio de larga ejecución (dockerd), una API REST que especifica interfaces que los programas pueden usar para hablar con el demonio, y una interfaz de línea de comandos (docker).
@@ -285,6 +286,7 @@ creamos el package.json , luego instalamos dependencies
 
 - npm i express
 - npm i mysql2
+- npm i nodemon
 
 ```javascript
 const express = require("express");
@@ -310,16 +312,33 @@ db.connect((err) => {
     console.error("Error connecting to MySQL:", err);
     return;
   }
-  console.log("Connected to MySQL");
+  console.log("Connected to MySQL VIVA LA LIBERTAD 🗽");
 });
 
-//iniciando el server
+//ruta de prueba en el nevegador
+app.get("/", (req, res) => {
+  db.query("SELECT 1 + 1 AS solution", (err, results) => {
+    if (err) throw err;
+    //por consola
+    console.log(results[0]);
+    res.send(`La solución es: ${results[0].solution}`);
+  });
+});
+
+//iniciando el server mensaje de salida
 app.listen(PORT, () => {
   console.log(`listening in on port ${PORT} `);
 });
 ```
 
 Con esto creado estaria listo el sevidor de node con express y conectado con mysql
+
+El ejecutar `node app.js` o `nodemon app.js` se ejecutara el servidor y se conectara con la bd de mysql configurada en `docker`
+
+![web server](public/img/server1.png)
+![server_running](public/img/server2.png)
+
+<hr/>
 
 # Opcion Extra conectarse a mysql desde el contenedor
 
