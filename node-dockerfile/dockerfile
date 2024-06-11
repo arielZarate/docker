@@ -1,0 +1,33 @@
+#configuracion de archivo dockerfile 
+
+
+# usar una imagen de nodejs
+
+FROM node:18-alpine
+
+# Establecer el directorio de travajo dentro del contenedor 
+
+WORKDIR /app 
+
+
+## copiar en el package.json 
+
+COPY  package*.json ./
+
+# Instalar las dependecias 
+
+ RUN npm install 
+
+ # Copiar el resto del codigo de la aplicacion 
+
+ COPY . . 
+
+
+ # Exponer el puesto en el que la aplicacion  correra 
+
+ EXPOSE  4000
+
+
+# Comando para ejecutar la aplicacion
+
+CMD ["node", "app.js" ]

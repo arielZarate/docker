@@ -507,26 +507,160 @@ SELECT * FROM animals;
 
 ```
 
-# Docker 2 parte(potencia de docker veremos y su flexibilidad entre otras caracteristicas).
+# DOCKERFILE
 
 En esta 2da parte ya mostrare como se usa le dockerFile y otros archivos
 
 ## DockerFile
 
-Un Dockerfile es un archivo de texto plano que contiene una serie de instrucciones que Docker utiliza para crear una imagen de contenedor. Estas instrucciones incluyen acciones como copiar archivos dentro del contenedor, instalar dependencias, establecer variables de entorno y más. Básicamente, el Dockerfile define el entorno en el que se ejecutará tu aplicación dentro del contenedor Docker.
-Es decir en vez de hacer lo que hicimos paso a paso anteriormente de descargar la imagen crear un contenedor , etc aca en este archivo podemos dejar descripto el paso a paso.
+Un Dockerfile es un archivo de texto plano que define la configuración de una única imagen de contenedor.
+Especifica cómo se construye una imagen de contenedor, qué dependencias se instalan, qué archivos se copian dentro del contenedor y cómo se configura el entorno dentro del contenedor.
+Es útil para definir y construir la configuración específica de un único contenedor, por ejemplo, la imagen de un servidor web, una aplicación Node.js, una base de datos, etc.
+este archivo podemos dejar descripto el paso a paso.
 Muchas veces en nuestro proyecto trabajaran otras personas que no usan nuestras tecnologias por lo tanto utilizando docker un contenedor y usando un DockerFile le diremos a docker que descargue una imagen , que cree un contenedor paar esa imagen y que ejecute de la forma descripta , y todo ese con solo dos comandos, ademas solo se instala en el contenedor NO ESTA EN EL SISTEMA OPERATIVO POR LO TANTO CUANDO SE ELIMINA EL CONTENEDOR SE ELIMINA TODOS LOS PROGRAMAS QUE ESTABAN ADENTRO! 😀
 
-Aquí hay una descripción general de algunas instrucciones comunes que puedes encontrar en un Dockerfile:
+### Estructura
 
-FROM: Esta es la primera instrucción que debe aparecer en un Dockerfile. Indica la imagen base que se utilizará para construir tu imagen. Por ejemplo, puedes usar FROM node:14 para utilizar una imagen de Node.js versión 14 como base.
+```bash
 
-COPY / ADD: Estas instrucciones copian archivos desde tu sistema de archivos local al sistema de archivos del contenedor. Por ejemplo, COPY package.json /app copiará el archivo package.json desde el directorio actual al directorio /app dentro del contenedor.
+node-dockerfile/
+│
+├── Dockerfile
+├── package.json
+├── package-lock.json
+└── src/
+└── index.js
+```
 
-RUN: Esta instrucción ejecuta comandos en el contenedor durante el proceso de construcción. Por ejemplo, puedes usar RUN npm install para instalar las dependencias de tu aplicación.
+### crear servidor
 
-WORKDIR: Esta instrucción establece el directorio de trabajo dentro del contenedor. Es el directorio desde el cual se ejecutarán todos los comandos RUN, CMD y ENTRYPOINT. Por ejemplo, WORKDIR /app establecerá /app como el directorio de trabajo.
+1. Dentro de una folder en mi caso node-dockerfile ejecutamos `npm init -y` esto creara un package.json
+2. instalamos las dependencias `npm  i express nodemon`
+3. Creamos un archivo app.js que sera el `server`
 
-CMD / ENTRYPOINT: Estas instrucciones especifican el comando que se ejecutará cuando el contenedor se inicie. Puedes usar CMD para especificar un comando que se ejecutará por defecto cuando se inicie el contenedor, mientras que ENTRYPOINT especifica un comando que se ejecutará siempre y cuando se pueda reemplazar con otros comandos al iniciar el contenedor.
+```javascript
+const express = require("express");
+const app = express();
+const port = 4000;
+
+app.get("/", (req, res) => {
+  res.json("Hello World!");
+});
+
+app.listen(port, () => {
+  console.log(`Servidor escuchando en http://localhost:${port}`);
+});
+```
+
+En el package.json creo un script
+
+```javascript
+{
+  "name": "dockerfile",
+  "version": "1.0.0",
+  "main": "app.js",
+  "author": "Ariel Zarate",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js"
+  },
+  "keywords": [],
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "express": "^4.19.2",
+    "nodemon": "^3.1.3"
+  }
+}
+
+
+```
+
+### creando dockefile
+
+##### Aquí hay una descripción general de algunas instrucciones comunes que puedes encontrar en un Dockerfile:
+
+1.  FROM: Esta es la primera instrucción que debe aparecer en un Dockerfile. Indica la imagen base que se utilizará para construir tu imagen. Por ejemplo, puedes usar FROM node:14 para utilizar una imagen de Node.js versión 14 como base.
+
+2.  COPY / ADD: Estas instrucciones copian archivos desde tu sistema de archivos local al sistema de archivos del contenedor. Por ejemplo, COPY package.json /app copiará el archivo package.json desde el directorio actual al directorio /app dentro del contenedor.
+
+3.  RUN: Esta instrucción ejecuta comandos en el contenedor durante el proceso de construcción. Por ejemplo, puedes usar RUN npm install para instalar las dependencias de tu aplicación.
+
+4.  WORKDIR: Esta instrucción establece el directorio de trabajo dentro del contenedor. Es el directorio desde el cual se ejecutarán todos los comandos RUN, CMD y ENTRYPOINT. Por ejemplo, WORKDIR /app establecerá /app como el directorio de trabajo.
+
+5.  CMD / ENTRYPOINT: Estas instrucciones especifican el comando que se ejecutará cuando el contenedor se inicie. Puedes usar CMD para especificar un comando que se ejecutará por defecto cuando se inicie el contenedor, mientras que ENTRYPOINT especifica un comando que se ejecutará siempre y cuando se pueda reemplazar con otros comandos al iniciar el contenedor.
 
 Estas son solo algunas de las instrucciones comunes que puedes encontrar en un Dockerfile. Dependiendo de tus necesidades específicas, puedes encontrar otras instrucciones que se ajusten mejor a tu caso de uso. En general, un Dockerfile es la piedra angular para construir imágenes de contenedor personalizadas que contienen tu aplicación y todos los componentes necesarios para que se ejecute correctamente dentro de un entorno Docker.
+
+Ahora cremos el un archivo `dockerfile` sin extension
+
+```bash
+
+#configuracion de archivo dockerfile
+
+# usar una imagen de nodejs
+
+FROM node:18-alpine
+
+# Establecer el directorio de travajo dentro del contenedor
+
+WORKDIR /app
+
+
+## copiar en el package.json
+
+COPY  package*.json ./
+
+# Instalar las dependecias
+
+ RUN npm install
+
+ # Copiar el resto del codigo de la aplicacion
+
+ COPY . .
+
+
+ # Exponer el puesto en el que la aplicacion  correra
+
+ EXPOSE  4000
+
+
+# Comando para ejecutar la aplicacion
+
+CMD ["npx","nodemon", "app.js"]
+
+```
+
+### contruir imagen
+
+Ejecutamos
+
+```bash
+docker build -t app-node .
+
+```
+
+### Ejecutar contenedor de imagen
+
+```bash
+docker run  -p 4001:4000 app-node
+```
+
+con eso ya tenemos creado el contenedor y se esta ejecutando ,podemos ejecutar
+
+- docker ps -a
+- docker stop <nombre_container o id>
+- docker start <nombre_del_contenedor_o_ID> #solo ejecuta el contenedor pero no crea nada , en cambio al hacer run crea uno nuevo!!
+- docker restart <nombre_del_contenedor_o_ID>
+- docker rm <nombre_del_contenedor_o_ID> #elimina el contenedor
+- docker logs <nombre_del_contenedor_o_ID>
+- docker stats # muestra todos los recursos que consume el contenedor
+- docker stop $(docker ps -q) # Detener todos los contenedores en ejecución
+
+## Docker Compose:
+
+Docker Compose es una herramienta que permite definir y ejecutar aplicaciones compuestas por múltiples contenedores.
+Utiliza un archivo YAML (docker-compose.yml) para definir los servicios que componen la aplicación, incluyendo la configuración de cada servicio, las dependencias entre ellos y cómo se comunican.
+Es útil para orquestar y gestionar múltiples contenedores como una aplicación única, simplificando el proceso de desarrollo, prueba y despliegue de aplicaciones que requieren varios servicios.
+Proporciona comandos para gestionar fácilmente los contenedores definidos en el archivo docker-compose.yml, como iniciarlos, detenerlos, ver sus registros, etc.
+En resumen, mientras que un Dockerfile se utiliza para definir la configuración de una sola imagen de contenedor, Docker Compose se utiliza para definir la arquitectura de una aplicación compuesta por múltiples contenedores, simplificando la gestión y orquestación de esos contenedores como una aplicación única.
