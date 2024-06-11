@@ -241,7 +241,18 @@ docker pull mysql
 
 ```
 
-## Creando un servidor de docker para ejecutar mysql con Node
+# 1 Creando un servidor de docker para ejecutar mysql con Node
+
+### Estructura
+
+```bash
+
+node-server/
+│
+├── package.json
+├── package-lock.json
+└── app.js
+```
 
 ### 1.1 crear contenedor con MYSQL
 
@@ -276,6 +287,17 @@ Desglose del Comando `docker run`:
 
 ### 1.2 crear contenedor con POSTGRES (opcion 2)
 
+En el mismo archivo `app.js `
+
+```bash
+
+node-server/
+│
+├── package.json
+├── package-lock.json
+└── app.js
+```
+
 ```bash
 docker run --name postgres-container  -e POSTGRES_PASSWORD=admin  -e POSTGRES_DB=db_prueba_postgres -p 5432:5432 -d postgres
 
@@ -293,7 +315,25 @@ docker run --name postgres-container  -e POSTGRES_PASSWORD=admin  -e POSTGRES_DB
 
 <hr/>
 
-### 2 creamos en servidor de nodejs
+# 2 creamos en servidor de nodejs
+
+Estructura
+
+```bash
+docker-nodejs/
+│
+├── src/
+│   ├── controller/
+│   │   └── user.js
+│   ├── routes/
+│   │   └── user.js
+│   └── app.js
+│
+├── package.json
+└── package-lock.json
+
+
+```
 
 Creamos una folder llamada node_server. Y adentro ejecutamos el siguiente comando
 
