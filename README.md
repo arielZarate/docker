@@ -243,7 +243,7 @@ docker pull mysql
 
 ## Creando un servidor de docker para ejecutar mysql con Node
 
-### 1 creamos el contenedor
+### 1.1 crear contenedor con MYSQL
 
 ```bash
  docker run --name mysql-container -e MYSQL_ROOT_PASSWORD=admin -e MYSQL_DATABASE=test-docker -p 3307:3306 -d mysql
@@ -274,6 +274,25 @@ Desglose del Comando `docker run`:
 - mysql:5.7 o solamente `mysql`.
   Esta es la imagen de Docker que se utilizará para crear el contenedor. En este caso, se está usando la imagen oficial de MySQL en su versión 5.7.
 
+### 1.2 crear contenedor con POSTGRES (opcion 2)
+
+```bash
+docker run --name postgres-container  -e POSTGRES_PASSWORD=admin  -e POSTGRES_DB=db_prueba_postgres -p 5432:5432 -d postgres
+
+```
+
+- puede modificar el nombre , el puerto y el password que ud quiera
+
+- no se puede monitorear el estado de postgres dentro del contenedor como se hace con mysql con systemctl status
+
+- la opción es utilizar el comando pg_isready para verificar si el servidor PostgreSQL está listo para aceptar conexiones.
+
+```bash
+ docker exec mi_postgres pg_isready
+```
+
+<hr/>
+
 ### 2 creamos en servidor de nodejs
 
 Creamos una folder llamada node_server. Y adentro ejecutamos el siguiente comando
@@ -299,7 +318,7 @@ app.name = "server Node con docker";
 
 // Configuración de la conexión a MySQL
 const db = mysql.createConnection({
-  host: "localhost", // El nombre del servicio del contenedor de MySQL
+  host: "localhost",
   user: "root",
   password: "admin",
   database: "test-docker",
@@ -344,7 +363,7 @@ El ejecutar `node app.js` o `nodemon app.js` se ejecutara el servidor y se conec
 
 Una vez levantado el contenedor tambien podemos acceder a el y entrar con mysql para ejecutar comandos mysql desde consola 😀
 
-### Paso 1: Acceder al contenedor
+## Paso 1: Acceder al contenedor
 
 Primero, necesitas acceder al contenedor en ejecución. Puedes hacerlo utilizando el comando docker exec para ejecutar comandos dentro de un contenedor en ejecución.
 
@@ -359,7 +378,7 @@ En este comando:
 - mysql-container es el nombre del contenedor en el que deseas ejecutar el comando.
 - bash es el comando que deseas ejecutar, en este caso, una terminal bash.
 
-### Paso 2: Conectarse a MySQL desde la terminal del contenedor
+## Paso 2: Conectarse a MySQL desde la terminal del contenedor
 
 Una vez dentro del contenedor, puedes conectarte a MySQL usando el cliente MySQL.
 
@@ -415,3 +434,99 @@ SELECT \* FROM users;
 Esta es una forma de realizar consultas MySQL directamente dentro del contenedor. Puedes utilizar cualquier comando SQL que necesites una vez que estés conectado a la base de datos.
 
 ![image](public/img/dbmysql.png)
+
+## Conectarse postgres desde el contenedor
+
+1.  Acceder al contenedor
+
+```bash
+docker exec -it postgres-container  bash
+```
+
+3. acceder a postgresql
+
+```bash
+psql -U postgres
+```
+
+2.  Ver base de datos
+
+```bash
+psql -U postgres -c '\l'
+```
+
+Dentro del cliente psql, puedes ejecutar una variedad de comandos para interactuar con el servidor PostgreSQL, administrar bases de datos, tablas, usuarios y más. Aquí tienes una lista de algunos de los comandos más comunes que puedes usar:
+
+```bash
+\l: Lista todas las bases de datos disponibles.
+
+\c dbname: Conecta a una base de datos específica.
+
+\dt: Lista todas las tablas en la base de datos actual.
+
+\d table_name: Describe la estructura de una tabla específica.
+
+\du: Lista todos los roles de usuario (usuarios).
+
+\q: Sale del cliente psql.
+
+\h: Muestra la lista de comandos SQL disponibles.
+
+\conninfo: Muestra información sobre la conexión actual.
+
+\timing: Activa o desactiva el cronometraje de las consultas.
+
+\df: Lista todas las funciones definidas en la base de datos.
+
+\dv: Lista todas las vistas definidas en la base de datos.
+
+\copyright: Muestra información de derechos de autor.
+
+\password: Cambia la contraseña del usuario actual.
+
+\x: Activa o desactiva el modo de salida expandida.
+
+CREATE DATABASE my_database;
+
+
+//ejemplo creado
+
+CREATE DATABASE pet;
+\c pet
+CREATE TABLE animals (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100),
+    species VARCHAR(100)
+);
+INSERT INTO animals (name, species) VALUES ('Max', 'Dog');
+INSERT INTO animals (name, species) VALUES ('Whiskers', 'Cat');
+INSERT INTO animals (name, species) VALUES ('Tweety', 'Bird');
+SELECT * FROM animals;
+\q
+
+
+```
+
+# Docker 2 parte(potencia de docker veremos y su flexibilidad entre otras caracteristicas).
+
+En esta 2da parte ya mostrare como se usa le dockerFile y otros archivos
+
+## DockerFile
+
+Un Dockerfile es un archivo de texto plano que contiene una serie de instrucciones que Docker utiliza para crear una imagen de contenedor. Estas instrucciones incluyen acciones como copiar archivos dentro del contenedor, instalar dependencias, establecer variables de entorno y más. Básicamente, el Dockerfile define el entorno en el que se ejecutará tu aplicación dentro del contenedor Docker.
+Es decir en vez de hacer lo que hicimos paso a paso anteriormente de descargar la imagen crear un contenedor , etc aca en este archivo podemos dejar descripto el paso a paso.
+Muchas veces en nuestro proyecto trabajaran otras personas que no usan nuestras tecnologias por lo tanto utilizando docker un contenedor y usando un DockerFile le diremos a docker que descargue una imagen , que cree un contenedor paar esa imagen y que ejecute de la forma descripta , y todo ese con solo dos comandos, ademas solo se instala en el contenedor NO ESTA EN EL SISTEMA OPERATIVO POR LO TANTO CUANDO SE ELIMINA EL CONTENEDOR SE ELIMINA TODOS LOS PROGRAMAS QUE ESTABAN ADENTRO! 😀
+
+Aquí hay una descripción general de algunas instrucciones comunes que puedes encontrar en un Dockerfile:
+
+FROM: Esta es la primera instrucción que debe aparecer en un Dockerfile. Indica la imagen base que se utilizará para construir tu imagen. Por ejemplo, puedes usar FROM node:14 para utilizar una imagen de Node.js versión 14 como base.
+
+COPY / ADD: Estas instrucciones copian archivos desde tu sistema de archivos local al sistema de archivos del contenedor. Por ejemplo, COPY package.json /app copiará el archivo package.json desde el directorio actual al directorio /app dentro del contenedor.
+
+RUN: Esta instrucción ejecuta comandos en el contenedor durante el proceso de construcción. Por ejemplo, puedes usar RUN npm install para instalar las dependencias de tu aplicación.
+
+WORKDIR: Esta instrucción establece el directorio de trabajo dentro del contenedor. Es el directorio desde el cual se ejecutarán todos los comandos RUN, CMD y ENTRYPOINT. Por ejemplo, WORKDIR /app establecerá /app como el directorio de trabajo.
+
+CMD / ENTRYPOINT: Estas instrucciones especifican el comando que se ejecutará cuando el contenedor se inicie. Puedes usar CMD para especificar un comando que se ejecutará por defecto cuando se inicie el contenedor, mientras que ENTRYPOINT especifica un comando que se ejecutará siempre y cuando se pueda reemplazar con otros comandos al iniciar el contenedor.
+
+Estas son solo algunas de las instrucciones comunes que puedes encontrar en un Dockerfile. Dependiendo de tus necesidades específicas, puedes encontrar otras instrucciones que se ajusten mejor a tu caso de uso. En general, un Dockerfile es la piedra angular para construir imágenes de contenedor personalizadas que contienen tu aplicación y todos los componentes necesarios para que se ejecute correctamente dentro de un entorno Docker.
