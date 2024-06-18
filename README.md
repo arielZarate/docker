@@ -299,7 +299,7 @@ node-server/
 ```
 
 ```bash
-docker run --name postgres-container  -e POSTGRES_PASSWORD=admin  -e POSTGRES_DB=db_prueba_postgres -p 5432:5432 -d postgres
+docker run --name postgres-container  -e POSTGRES_PASSWORD=admin  -e POSTGRES_DB=db -p 5432:5432 -d postgres
 
 ```
 
@@ -704,3 +704,128 @@ Utiliza un archivo YAML (docker-compose.yml) para definir los servicios que comp
 Es útil para orquestar y gestionar múltiples contenedores como una aplicación única, simplificando el proceso de desarrollo, prueba y despliegue de aplicaciones que requieren varios servicios.
 Proporciona comandos para gestionar fácilmente los contenedores definidos en el archivo docker-compose.yml, como iniciarlos, detenerlos, ver sus registros, etc.
 En resumen, mientras que un Dockerfile se utiliza para definir la configuración de una sola imagen de contenedor, Docker Compose se utiliza para definir la arquitectura de una aplicación compuesta por múltiples contenedores, simplificando la gestión y orquestación de esos contenedores como una aplicación única.
+
+#### Instalación
+
+Para instalar docker-compose, primero necesitamos tener instalada la herramienta Docker en nuestro sistema. Después, en Ubuntu, ejecutamos el siguiente comando:
+
+```bash
+sudo apt install docker-compose
+```
+
+## Proyecto docker-compose
+
+Estructura
+
+```bash
+docker-compose/
+│
+├── docker-compose.yml
+├── .env
+├── lib/
+│   └── config.js
+└── app.js
+
+```
+
+Dependencias
+
+- "dotenv": "^16.4.5",
+- "express": "^4.19.2",
+- "morgan": "^1.10.0",
+- "pg": "^8.12.0",
+- "sequelize": "^6.37.3"
+
+### Docker-Compose.yml
+
+```bash
+version: "3.8"
+
+services:
+  db:
+    image: postgres:latest
+    restart: always
+    container_name: postgres-container
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+    ports:
+      - "5432:5432"
+    volumes:
+      - /var/lib/postgresql/data
+
+```
+
+### config.js
+
+```javascript
+const { Sequelize } = require("sequelize");
+
+const DATABASE = process.env.POSTGRES_DB;
+const USER = process.env.POSTGRES_USER;
+const PASSWORD = process.env.POSTGRES_PASSWORD;
+
+//ESTOS SON LOS DATOS CONFIGURADOS EN EL DOCKER-COMPOSE
+const sequelize = new Sequelize(DATABASE, USER, PASSWORD, {
+  host: "localhost",
+  dialect: "postgres",
+  port: 5432,
+});
+
+module.exports = sequelize;
+```
+
+### .env
+
+```bash
+  |
+  #variables de docker
+      POSTGRES_DB= postgres
+      POSTGRES_USER= postgres
+      POSTGRES_PASSWORD= admin
+```
+
+### creando server con nodejs
+
+```javascript
+const express = require("express");
+const dotenv = require("dotenv");
+dotenv.config();
+
+const morgan = require("morgan");
+const sequelize = require("./lib/config");
+
+const app = express();
+app.use(express.json());
+app.use(morgan("dev"));
+
+//ruta test
+
+app.get("/", (req, res) => {
+  res.json("Hello World!");
+});
+
+//funcion que ejecuta el server
+async function Start() {
+  try {
+    await sequelize.authenticate();
+    console.log("Conectado a la base de datos");
+
+    //  .then((seq) => seq.sync({ force: true }));
+    app.listen(3000, async () => {
+      console.log("listening on port 3000...");
+    });
+  } catch (error) {
+    console.error("No se pudo conectar a la base de datos:", error);
+  }
+}
+
+Start();
+```
+
+#### opcion 2: creando contendedor de nodejs
+
+1. bajar imagen de node `docker pull node`
+2. Ejecutar `docker run -p 3000:3000 --name docker-node -d node`
+   `
